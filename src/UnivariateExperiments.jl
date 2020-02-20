@@ -1,5 +1,8 @@
 module UnivariateExperiments
 
-greet() = print("Hello World!")
+function greet()
+    @debug "Hello, world!"
+    @info "Hello, world!"
+end
 
 end # module
