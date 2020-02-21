@@ -22,6 +22,7 @@ end
 
 parsed_args = parse_args(ARGS, s)
 
-@info parsed_args
+# @info parsed_args
 
-UnivariateExperiments.greet()
+# UnivariateExperiments.check_package_api()
+UnivariateExperiments.plot()
