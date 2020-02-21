@@ -2,3 +2,6 @@ name = "UnivariateExperiments"
 uuid = "ea5049cf-e8c9-4dbe-b304-1c13989492de"
 authors = ["Sujeevraja Sanjeevi <sujeevraja26@gmail.com>"]
 version = "0.1.0"
+
+[deps]
+PolyhedralRelaxations = "2e741578-48fa-11ea-2d62-b52c946f73a0"
