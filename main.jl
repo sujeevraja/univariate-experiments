@@ -6,7 +6,7 @@ exec $HOME/bin/julia/julia-1.3.0/bin/julia --project="." --color=yes --startup-f
 =#
 
 using ArgParse
-using UnivariateExperiments
+include("src/UnivariateExperiments.jl")
 
 s = ArgParseSettings()
 @add_arg_table! s begin
@@ -25,4 +25,4 @@ parsed_args = parse_args(ARGS, s)
 # @info parsed_args
 
 # UnivariateExperiments.check_package_api()
-UnivariateExperiments.plot()
+plot()
