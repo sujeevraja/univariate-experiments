@@ -84,7 +84,7 @@ function plot_lp()
     f = x -> x^3
     xs = collect(-1.0:0.01:1.0)
     fs = [x^3 for x in xs]
-    p = Plots.plot(xs,fs,legend=false)
+    p = Plots.plot(xs,fs,legend=false,color=:orange)
 
     cbc_opt = optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
     lp_data, fn_data = PR.construct_lp_relaxation(f, collect(-1.0:0.25:1.0))
@@ -112,7 +112,7 @@ function plot_lp()
         x_max = min((y_max - c) / m, 1.0)
         line_xs = [x_min, x_max]
         line_ys = [(m*x) + c for x in line_xs]
-        Plots.plot!(line_xs, line_ys)
+        Plots.plot!(line_xs, line_ys, color=:blue)
 
         @objective(lp, Min, yvar - (xvar * tan(α)))
         optimize!(lp)
@@ -122,7 +122,7 @@ function plot_lp()
         x_max = min((y_max - c) / m, 1.0)
         line_xs = [x_min, x_max]
         line_ys = [(m*x) + c for x in line_xs]
-        Plots.plot!(line_xs, line_ys)
+        Plots.plot!(line_xs, line_ys, color=:green)
     end
 
     Plots.savefig(p, "out/lp.pdf")
