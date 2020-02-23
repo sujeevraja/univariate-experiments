@@ -11,11 +11,12 @@ const PR = PolyhedralRelaxations
 # An alternative is `Plots.plotly()`, which uses Python's plotly library as the backend.
 Plots.gr()
 
+base_partition = collect(-1.0:0.25:1.0)
+
 function get_mip_values()::Tuple{Vector{Float64},Vector{Float64},Vector{Float64}}
     f = x->x^3
     f_dash = x->3*(x^2)
-    part = collect(-1.0:0.5:1.0)
-    formulation_data, function_data = PR.construct_milp_relaxation(f,f_dash,part)
+    formulation_data, function_data = PR.construct_milp_relaxation(f,f_dash,base_partition)
     cbc_opt = optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
     milp = Model(cbc_opt)
     lb, ub = PR.get_variable_bounds(formulation_data)
@@ -76,7 +77,7 @@ end
 function plot_mip()
     xs,max_ys,min_ys = get_mip_values()
     fs = [x^3 for x in xs]
-    p = Plots.plot(xs,hcat(max_ys,fs,min_ys))
+    p = Plots.plot(xs,hcat(max_ys,fs,min_ys), legend=false)
     Plots.savefig(p, "out/mip.pdf")
 end
 
@@ -87,9 +88,12 @@ function plot_lp()
     p = Plots.plot(xs,fs,legend=false,color=:orange)
 
     cbc_opt = optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
-    lp_data, fn_data = PR.construct_lp_relaxation(f, collect(-1.0:0.25:1.0))
+    lp_data, fn_data = PR.construct_lp_relaxation(f, base_partition)
     lp = Model(cbc_opt)
     lb, ub = PR.get_variable_bounds(lp_data)
+    @info "x bounds: $(lb[lp_data.x_index]), $(ub[lp_data.x_index])"
+    @info "y bounds: $(lb[lp_data.y_index]), $(ub[lp_data.y_index])"
+
     num_vars = PR.get_num_variables(lp_data)
     @variable(lp, lb[i] <= y[i=1:num_vars] <= ub[i])
     A, b = PR.get_eq_constraint_matrices(lp_data)
