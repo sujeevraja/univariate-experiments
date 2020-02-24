@@ -11,7 +11,7 @@ opt = CPLEX.Optimizer
 # An alternative is `Plots.plotly()`, which uses Python's plotly library as the backend.
 Plots.gr()
 
-function plot_mip(f, base_partition)
+function plot_mip(f::Function, base_partition::Vector{<:Real})
     milp_data, function_data = PR.construct_milp_relaxation(f,base_partition)
     lb, ub = PR.get_variable_bounds(milp_data)
     x_min, x_max = lb[milp_data.x_index], ub[milp_data.x_index]
@@ -71,7 +71,25 @@ function plot_mip(f, base_partition)
     @info "finished plotting mip"
 end
 
-function plot_lp(f, base_partition)
+function get_lp_cut(m::Float64, c::Float64, x_min::Float64, x_max::Float64, y_min::Float64,
+        y_max::Float64)::Pair{Vector{Float64},Vector{Float64}}
+    xs, ys = Float64[], Float64[]
+    for a in [x_min, x_max]
+        y = (m * a) + c
+        if y >= y_max
+            x = (y_max - c) / m
+        elseif y >= y_min
+            x = a
+        else
+            x = (y_min - c) / m
+        end
+        push!(xs, x)
+        push!(ys, (m*x)+c)
+    end
+    return Pair(xs,ys)
+end
+
+function plot_lp(f::Function, base_partition::Vector{<:Real})
     lp_data, fn_data = PR.construct_lp_relaxation(f, base_partition)
     lb, ub = PR.get_variable_bounds(lp_data)
 
@@ -98,31 +116,50 @@ function plot_lp(f, base_partition)
     end
 
     res = π/100
-    α_min = res
-    α_max = (π/2) - res
-    for α ∈ collect(0:res:α_max)
-        m = tan(α)
+    for α ∈ collect(0:res:π)
         xvar = y[lp_data.x_index]
         yvar = y[lp_data.y_index]
 
-        @objective(lp, Max, yvar - (xvar * tan(α)))
-        optimize!(lp)
-        @assert termination_status(lp) == MOI.OPTIMAL
-        c = objective_value(lp)
-        x1 = max((y_min - c) / m, x_min)
-        x2 = min((y_max - c) / m, x_max)
-        line_xs = [x1, x2]
-        line_ys = [(m*x) + c for x in line_xs]
-        Plots.plot!(line_xs, line_ys, color=:blue)
+        if (isapprox(α, π/2, atol=1e-5) || isapprox(α, -π/2, atol=1e-5))
+            continue
+        end
 
-        @objective(lp, Min, yvar - (xvar * tan(α)))
+        if isapprox(α, 0, atol=1e-5)
+            @objective(lp, Max, yvar)
+        # elseif (isapprox(α, π/2, atol=1e-5) || isapprox(α, -π/2, atol=1e-5))
+        #     @objective(lp, Max, xvar)
+        else
+            m = tan(α)
+            @objective(lp, Max, yvar - (xvar * tan(α)))
+        end
+
         optimize!(lp)
         @assert termination_status(lp) == MOI.OPTIMAL
         c = objective_value(lp)
-        x1 = max((y_min - c) / m, x_min)
-        x2 = min((y_max - c) / m, x_max)
-        line_xs = [x1, x2]
-        line_ys = [(m*x) + c for x in line_xs]
+
+        if isapprox(α, 0, atol=1e-5)
+            line_xs, line_ys = [x_min, x_max], [c, c]
+        # elseif (isapprox(α, π/2, atol=1e-5) || isapprox(α, -π/2, atol=1e-5))
+        #     line_xs, line_ys = [c, c], [y_min, y_max]
+        else
+            line_xs, line_ys = get_lp_cut(m,c,x_min,x_max,y_min,y_max)
+        end
+
+        if !isempty(line_xs)
+            Plots.plot!(line_xs, line_ys, color=:blue)
+        end
+
+        set_objective_sense(lp, MOI.MIN_SENSE)
+        optimize!(lp)
+        @assert termination_status(lp) == MOI.OPTIMAL
+        c = objective_value(lp)
+        if isapprox(α, 0, atol=1e-5)
+            line_xs, line_ys = [x_min, x_max], [c, c]
+        # elseif (isapprox(α, π/2, atol=1e-5) || isapprox(α, -π/2, atol=1e-5))
+        #     line_xs, line_ys = [c, c], [y_min, y_max]
+        else
+            line_xs,line_ys = get_lp_cut(m,c,x_min,x_max,y_min,y_max)
+        end
         Plots.plot!(line_xs, line_ys, color=:green)
     end
 
@@ -131,8 +168,12 @@ function plot_lp(f, base_partition)
 end
 
 function generate_plots()
-    # f, bp = x->x^3, collect(-1.0:0.25:1.0)
-    f, bp = sin, collect(-π:π/4:π)
+    f, bp = x->x^3, collect(-1.0:0.25:1.0)
+    # f, bp = sin, collect(-π:π/16:(2*π))
+    # f, bp = sin, collect(0:π/4:(3*π))
+    # f, bp = cos, collect(-π:π/4:(2*π))
+    # f, bp = log, collect(1.0:3.0:5.0)
+    # f, bp = exp, collect(0.0:1.0:2.0)
     plot_mip(f, bp)
     plot_lp(f, bp)
 end
