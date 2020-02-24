@@ -53,7 +53,7 @@ function plot_mip(f::Function, base_partition::Vector{<:Real})
         @assert termination_status(milp) == MOI.OPTIMAL
         yval = value.(x[milp_data.y_index])
         obj = objective_value(milp)
-        @assert isapprox(yval, obj, atol=1e-5) "obj $obj and y $yval different in max problem"
+        @assert isapprox(yval, obj, atol = 1e-5) "obj $obj and y $yval different in max problem"
         push!(max_ys, yval)
 
         set_objective_sense(milp, MOI.MIN_SENSE)
@@ -61,7 +61,7 @@ function plot_mip(f::Function, base_partition::Vector{<:Real})
         @assert termination_status(milp) == MOI.OPTIMAL
         yval = value.(x[milp_data.y_index])
         obj = objective_value(milp)
-        @assert isapprox(yval, obj, atol=1e-5) "obj $obj and y $yval different in min problem"
+        @assert isapprox(yval, obj, atol = 1e-5) "obj $obj and y $yval different in min problem"
         push!(min_ys, yval)
     end
 
