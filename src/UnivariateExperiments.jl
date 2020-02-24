@@ -1,11 +1,11 @@
-import Cbc
+import CPLEX
 import Plots
 import PolyhedralRelaxations
 using JuMP
 
 const PR = PolyhedralRelaxations
 
-const opt = optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
+opt = CPLEX.Optimizer
 
 # This line changes the Plots backend to GR, which speeds up plotting.
 # An alternative is `Plots.plotly()`, which uses Python's plotly library as the backend.
@@ -19,6 +19,7 @@ function plot_mip(f, base_partition)
 
     # Add variables
     milp = Model(opt)
+    set_optimizer_attribute(milp, "CPXPARAM_ScreenOutput", 0)
     num_vars = PR.get_num_variables(milp_data)
     binary_indices = PR.get_binary_indices(milp_data)
     @variable(milp, lb[i] <= x[i=1:num_vars] <= ub[i])
@@ -85,6 +86,7 @@ function plot_lp(f, base_partition)
     p = Plots.plot(xs,fs,legend=false,color=:orange)
 
     lp = Model(opt)
+    set_optimizer_attribute(lp, "CPXPARAM_ScreenOutput", 0)
 
     num_vars = PR.get_num_variables(lp_data)
     @variable(lp, lb[i] <= y[i=1:num_vars] <= ub[i])
@@ -98,7 +100,7 @@ function plot_lp(f, base_partition)
     res = π/100
     α_min = res
     α_max = (π/2) - res
-    for α ∈ collect(α_min:res:α_max)
+    for α ∈ collect(0:res:α_max)
         m = tan(α)
         xvar = y[lp_data.x_index]
         yvar = y[lp_data.y_index]
@@ -129,7 +131,8 @@ function plot_lp(f, base_partition)
 end
 
 function generate_plots()
-    f, bp = x->x^3, collect(-1.0:0.25:1.0)
+    # f, bp = x->x^3, collect(-1.0:0.25:1.0)
+    f, bp = sin, collect(-π:π/4:π)
     plot_mip(f, bp)
     plot_lp(f, bp)
 end
