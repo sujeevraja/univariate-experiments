@@ -12,7 +12,7 @@ Plots.gr()
 
 base_partition = collect(-1.0:0.25:1.0)
 
-function get_mip_values()::Tuple{Vector{Float64},Vector{Float64},Vector{Float64}}
+function plot_mip()
     cbc_opt = optimizer_with_attributes(Cbc.Optimizer, "logLevel" => 0)
     milp = Model(cbc_opt)
     f = x->x^3
@@ -68,11 +68,6 @@ function get_mip_values()::Tuple{Vector{Float64},Vector{Float64},Vector{Float64}
         push!(min_ys, yval)
     end
 
-    return xs,max_ys,min_ys
-end
-
-function plot_mip()
-    xs,max_ys,min_ys = get_mip_values()
     fs = [x^3 for x in xs]
     p = Plots.plot(xs,hcat(max_ys,fs,min_ys), legend=false)
     Plots.savefig(p, "out/mip.pdf")
