@@ -168,12 +168,12 @@ function plot_lp(f::Function, base_partition::Vector{<:Real})
 end
 
 function generate_plots()
-    f, bp = x->x^3, collect(-1.0:0.25:1.0)
-    # f, bp = sin, collect(-π:π/16:(2*π))
-    # f, bp = sin, collect(0:π/4:(3*π))
-    # f, bp = cos, collect(-π:π/4:(2*π))
-    # f, bp = log, collect(1.0:3.0:5.0)
-    # f, bp = exp, collect(0.0:1.0:2.0)
+    # f, bp = x->x^3, collect(-1.0:0.25:1.0)
+    # f, bp = sin, collect(-(2*π):π/8:(2*π))
+    # f, bp = cos, collect(-(2*π):π/8:(2*π))
+    # f, bp = log, collect(1.0:1.0:5.0)
+    # f, bp = exp, collect(0.0:0.5:2.0)
+    f, bp = cot, collect(π/16:π/32:(π-π/16))
     plot_mip(f, bp)
     plot_lp(f, bp)
 end
