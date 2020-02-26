@@ -11,8 +11,12 @@ opt = CPLEX.Optimizer
 # An alternative is `Plots.plotly()`, which uses Python's plotly library as the backend.
 Plots.gr()
 
-function plot_mip(f::Function, base_partition::Vector{<:Real})
-    milp_data, function_data = PR.construct_milp_relaxation(f,base_partition)
+function plot_mip(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Function,Nothing}=nothing, out_file="out/mip.pdf")
+    if isa(f_dash, Nothing)
+        milp_data, function_data = PR.construct_milp_relaxation(f, base_partition)
+    else 
+        milp_data, function_data = PR.construct_milp_relaxation(f, f_dash, base_partition)
+    end 
     lb, ub = PR.get_variable_bounds(milp_data)
     x_min, x_max = lb[milp_data.x_index], ub[milp_data.x_index]
     @info "x bounds: $x_min, $x_max"
@@ -53,7 +57,7 @@ function plot_mip(f::Function, base_partition::Vector{<:Real})
         @assert termination_status(milp) == MOI.OPTIMAL
         yval = value.(x[milp_data.y_index])
         obj = objective_value(milp)
-        @assert isapprox(yval, obj, atol=1e-5) "obj $obj and y $yval different in max problem"
+        @assert isapprox(yval, obj, atol = 1e-5) "obj $obj and y $yval different in max problem"
         push!(max_ys, yval)
 
         set_objective_sense(milp, MOI.MIN_SENSE)
@@ -61,13 +65,13 @@ function plot_mip(f::Function, base_partition::Vector{<:Real})
         @assert termination_status(milp) == MOI.OPTIMAL
         yval = value.(x[milp_data.y_index])
         obj = objective_value(milp)
-        @assert isapprox(yval, obj, atol=1e-5) "obj $obj and y $yval different in min problem"
+        @assert isapprox(yval, obj, atol = 1e-5) "obj $obj and y $yval different in min problem"
         push!(min_ys, yval)
     end
 
     fs = [f(x) for x in xs]
-    p = Plots.plot(xs,hcat(max_ys,fs,min_ys), legend=false)
-    Plots.savefig(p, "out/mip.pdf")
+    p = Plots.plot(xs, hcat(max_ys,fs,min_ys), legend=false)
+    Plots.savefig(p, out_file)
     @info "finished plotting mip"
 end
 
@@ -89,8 +93,12 @@ function get_lp_cut(m::Float64, c::Float64, x_min::Float64, x_max::Float64, y_mi
     return Pair(xs,ys)
 end
 
-function plot_lp(f::Function, base_partition::Vector{<:Real})
-    lp_data, fn_data = PR.construct_lp_relaxation(f, base_partition)
+function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Nothing,Function}=nothing, out_file="out/lp.pdf")
+    if isa(f_dash, Nothing)
+        lp_data, fn_data = PR.construct_lp_relaxation(f, base_partition)
+    else 
+        lp_data, fn_data = PR.construct_lp_relaxation(f, f_dash, base_partition)
+    end 
     lb, ub = PR.get_variable_bounds(lp_data)
 
     x_min, x_max = lb[lp_data.x_index], ub[lp_data.x_index]
@@ -163,7 +171,7 @@ function plot_lp(f::Function, base_partition::Vector{<:Real})
         Plots.plot!(line_xs, line_ys, color=:green)
     end
 
-    Plots.savefig(p, "out/lp.pdf")
+    Plots.savefig(p, out_file)
     @info "finished plotting lp"
 end
 
@@ -173,7 +181,17 @@ function generate_plots()
     # f, bp = cos, collect(-(2*π):π/8:(2*π))
     # f, bp = log, collect(1.0:1.0:5.0)
     # f, bp = exp, collect(0.0:0.5:2.0)
-    f, bp = cot, collect(π/16:π/32:(π-π/16))
-    plot_mip(f, bp)
-    plot_lp(f, bp)
+    # f, bp = cot, collect(π/16:π/32:(π-π/16))
+    @info "plotting sin(x)"
+    f, bp = sin, collect(0:π/8:(2*π))
+    plot_mip(f, bp, out_file="out/sin-mip.pdf")
+    plot_lp(f, bp, out_file="out/sin-lp.pdf")
+    @info "plotting x ⋅ abs(x)"
+    f, bp = x -> x * abs(x), collect(-1.0:0.25:1.0)
+    plot_mip(f, bp, out_file="out/xabsx-mip.pdf", f_dash=x->2*abs(x))
+    plot_lp(f, bp, out_file="out/xabsx-lp.pdf", f_dash=x->2*abs(x))
+    @info "plotting x^4 - x^3"
+    f, bp = x -> x^4 - x^3, collect(-0.5:0.1:1.0)
+    plot_mip(f, bp, out_file="out/poly-mip.pdf")
+    plot_lp(f, bp, out_file="out/poly-lp.pdf")
 end
