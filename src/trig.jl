@@ -130,12 +130,12 @@ function trig()
         ]
     end
 
-    open("out/trig_milp.csv", "w") do io
+    open("csv/trig_milp.csv", "w") do io
         writedlm(io, ["error_tol" "g_opt" "relaxation" "relative_gap" "time"], ',')
         writedlm(io, milp_statistics, ",")
     end
 
-    open("out/trig_lp.csv", "w") do io
+    open("csv/trig_lp.csv", "w") do io
         writedlm(io, ["error_tol" "g_opt" "relaxation" "relative_gap" "time"], ',')
         writedlm(io, lp_statistics, ",")
     end

@@ -358,12 +358,12 @@ function fo7()
         ]
     end
 
-    open("out/fo7_milp.csv", "w") do io
+    open("csv/fo7_milp.csv", "w") do io
         writedlm(io, ["error_tol" "g_opt" "relaxation" "relative_gap" "time"], ',')
         writedlm(io, milp_statistics, ",")
     end
 
-    open("out/fo7_lp.csv", "w") do io
+    open("csv/fo7_lp.csv", "w") do io
         writedlm(io, ["error_tol" "g_opt" "relaxation" "relative_gap" "time"], ',')
         writedlm(io, lp_statistics, ",")
     end

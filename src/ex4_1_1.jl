@@ -87,12 +87,12 @@ function ex4_1_1_single()
         ]
     end
 
-    open("out/single_ex4_1_1_milp.csv", "w") do io
+    open("csv/single_ex4_1_1_milp.csv", "w") do io
         writedlm(io, ["error_tol" "g_opt" "relaxation" "relative_gap" "time"], ',')
         writedlm(io, milp_statistics, ",")
     end
 
-    open("out/single_ex4_1_1_lp.csv", "w") do io
+    open("csv/single_ex4_1_1_lp.csv", "w") do io
         writedlm(io, ["error_tol" "g_opt" "relaxation" "relative_gap" "time"], ',')
         writedlm(io, lp_statistics, ",")
     end
@@ -192,12 +192,12 @@ function ex4_1_1_multiple()
         ]
     end
 
-    open("out/multiple_ex4_1_1_milp.csv", "w") do io
+    open("csv/multiple_ex4_1_1_milp.csv", "w") do io
         writedlm(io, ["error_tol" "g_opt" "relaxation" "relative_gap" "time"], ',')
         writedlm(io, milp_statistics, ",")
     end
 
-    open("out/multiple_ex4_1_1_lp.csv", "w") do io
+    open("csv/multiple_ex4_1_1_lp.csv", "w") do io
         writedlm(io, ["error_tol" "g_opt" "relaxation" "relative_gap" "time"], ',')
         writedlm(io, lp_statistics, ",")
     end

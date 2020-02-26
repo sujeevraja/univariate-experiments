@@ -1,5 +1,6 @@
 # Project-specific
-out/*
+plots/*
+csv/*
 !*/.gitkeep
 *.lp
 

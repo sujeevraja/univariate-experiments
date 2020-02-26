@@ -11,7 +11,7 @@ opt = CPLEX.Optimizer
 # An alternative is `Plots.plotly()`, which uses Python's plotly library as the backend.
 Plots.gr()
 
-function plot_mip(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Function,Nothing}=nothing, out_file="out/mip.pdf")
+function plot_mip(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Function,Nothing}=nothing, out_file="plots/mip.pdf")
     if isa(f_dash, Nothing)
         milp_data, function_data = PR.construct_milp_relaxation(f, base_partition)
     else 
@@ -93,7 +93,7 @@ function get_lp_cut(m::Float64, c::Float64, x_min::Float64, x_max::Float64, y_mi
     return Pair(xs,ys)
 end
 
-function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Nothing,Function}=nothing, out_file="out/lp.pdf")
+function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Nothing,Function}=nothing, out_file="plots/lp.pdf")
     if isa(f_dash, Nothing)
         lp_data, fn_data = PR.construct_lp_relaxation(f, base_partition)
     else 
@@ -184,14 +184,14 @@ function generate_plots()
     # f, bp = cot, collect(π/16:π/32:(π-π/16))
     @info "plotting sin(x)"
     f, bp = sin, collect(0:π/8:(2*π))
-    plot_mip(f, bp, out_file="out/sin-mip.pdf")
-    plot_lp(f, bp, out_file="out/sin-lp.pdf")
+    plot_mip(f, bp, out_file="plots/sin-mip.pdf")
+    plot_lp(f, bp, out_file="plots/sin-lp.pdf")
     @info "plotting x ⋅ abs(x)"
     f, bp = x -> x * abs(x), collect(-1.0:0.25:1.0)
-    plot_mip(f, bp, out_file="out/xabsx-mip.pdf", f_dash=x->2*abs(x))
-    plot_lp(f, bp, out_file="out/xabsx-lp.pdf", f_dash=x->2*abs(x))
+    plot_mip(f, bp, out_file="plots/xabsx-mip.pdf", f_dash=x->2*abs(x))
+    plot_lp(f, bp, out_file="plots/xabsx-lp.pdf", f_dash=x->2*abs(x))
     @info "plotting x^4 - x^3"
     f, bp = x -> x^4 - x^3, collect(-0.5:0.1:1.0)
-    plot_mip(f, bp, out_file="out/poly-mip.pdf")
-    plot_lp(f, bp, out_file="out/poly-lp.pdf")
+    plot_mip(f, bp, out_file="plots/poly-mip.pdf")
+    plot_lp(f, bp, out_file="plots/poly-lp.pdf")
 end
