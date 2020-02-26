@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #=
 export JULIA_DEBUG=UnivariateExperiments
-exec $HOME/bin/julia/julia-1.3.0/bin/julia --project="." --color=yes --startup-file=no -e \
+exec julia --project="." --color=yes --startup-file=no -e \
     'include(popfirst!(ARGS))' "${BASH_SOURCE[0]}" "$@"
 =#
 
