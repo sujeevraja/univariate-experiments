@@ -22,14 +22,14 @@ include("src/fo7.jl")
 
 s = ArgParseSettings()
 @add_arg_table! s begin
-    "--plot"
-    help = "flag to generate the plots"
+    "--plot", "-p"
+    help = "generate plots"
     action = :store_true
-    "--minlplib"
-    help = "flag to generate the results for minlplib"
+    "--minlplib", "-m"
+    help = "generate results for MINLPLIB instances"
     action = :store_true
-    "--basic"
-    help = "flag to collect the basic results for atomic functions"
+    "--basic", "-b"
+    help = "collect basic results for atomic functions"
     action = :store_true
 end
 
@@ -37,7 +37,7 @@ parsed_args = parse_args(ARGS, s)
 
 if parsed_args["plot"]
     generate_plots()
-end 
+end
 
 if parsed_args["minlplib"]
     @info "running the relaxations on trig"
@@ -46,7 +46,7 @@ if parsed_args["minlplib"]
     ex4_1_1()
     @info "running the relaxations on fo7"
     fo7()
-end 
+end
 # @info parsed_args
 
 # UnivariateExperiments.check_package_api()
