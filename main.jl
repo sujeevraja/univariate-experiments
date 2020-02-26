@@ -14,7 +14,7 @@ using SparseArrays
 using ArgParse
 using DelimitedFiles
 
-include("src/UnivariateExperiments.jl")
+include("src/plotting.jl")
 include("src/minlplib_helper.jl")
 include("src/trig.jl")
 include("src/ex4_1_1.jl")
