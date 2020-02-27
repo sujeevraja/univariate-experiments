@@ -1,6 +1,7 @@
 # Project-specific
 plots/*
 csv/*
+out/*
 !*/.gitkeep
 *.lp
 
