@@ -14,6 +14,7 @@ using SparseArrays
 using ArgParse
 using DelimitedFiles
 
+include("src/basics.jl")
 include("src/plotting.jl")
 include("src/minlplib_helper.jl")
 include("src/trig.jl")
@@ -47,7 +48,9 @@ if parsed_args["minlplib"]
     @info "running the relaxations on fo7"
     fo7()
 end
-# @info parsed_args
 
-# UnivariateExperiments.check_package_api()
-# plot()
+if parsed_args["basic"]
+    @info "generating error result table..."
+    generate_error_table()
+    @info "generated error resul table."
+end
