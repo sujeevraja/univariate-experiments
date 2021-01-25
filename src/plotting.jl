@@ -71,7 +71,7 @@ function plot_mip(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Fun
 
     fs = [f(x) for x in xs]
     p = Plots.plot(xs, hcat(max_ys, fs, min_ys), legend=false,
-        color=[:blue :orange :blue], linewidth=[1 2 1])
+        color=[:orange :blue :orange], linewidth=[1 1 1])
     Plots.savefig(p, out_file)
     @info "finished plotting mip"
 end
@@ -185,18 +185,21 @@ function generate_plots()
     # f, bp = cot, collect(π/16:π/32:(π-π/16))
 
     @info "plotting sin(x)"
-    # f, bp = sin, collect(0:π / 8:(2 * π))
-    f, bp = sin, collect(0:π:(2 * π))
+    # f, bp = sin, collect(0:π:(2 * π))
+    # f, bp = sin, collect(0:π / 2:(2 * π))
+    f, bp = sin, collect(0:π / 4:(2 * π))
     plot_mip(f, bp, out_file="plots/sin-mip.pdf")
     plot_lp(f, bp, out_file="plots/sin-lp.pdf")
     @info "plotting x ⋅ abs(x)"
-    # f, bp = x -> x * abs(x), collect(-1.0:0.25:1.0)
-    f, bp = x -> x * abs(x), collect(-1.0:1.0:1.0)
+    # f, bp = x -> x * abs(x), collect(-1.0:1.0:1.0)
+    # f, bp = x -> x * abs(x), collect(-1.0:0.5:1.0)
+    f, bp = x -> x * abs(x), collect(-1.0:0.25:1.0)
     plot_mip(f, bp, out_file="plots/xabsx-mip.pdf", f_dash=x -> 2 * abs(x))
     plot_lp(f, bp, out_file="plots/xabsx-lp.pdf", f_dash=x -> 2 * abs(x))
     @info "plotting x^4 - x^3"
-    # f, bp = x -> x^4 - x^3, collect(-0.5:0.1:1.0)
-    f, bp = x -> x^4 - x^3, collect(-0.5:0.5:1.0)
+    # f, bp = x -> x^4 - x^3, collect(-0.5:0.5:1.0)
+    # f, bp = x -> x^4 - x^3, collect(-0.5:0.25:1.0)
+    f, bp = x -> x^4 - x^3, collect(-0.5:0.125:1.0)
     plot_mip(f, bp, out_file="plots/poly-mip.pdf")
     plot_lp(f, bp, out_file="plots/poly-lp.pdf")
 end
