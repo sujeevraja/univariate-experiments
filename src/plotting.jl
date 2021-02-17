@@ -2,6 +2,7 @@ import CPLEX
 import Plots
 import PolyhedralRelaxations
 using JuMP
+using LaTeXStrings
 
 const PR = PolyhedralRelaxations
 
@@ -110,7 +111,9 @@ function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Noth
 
     xs = collect(x_min:0.01:x_max)
     fs = [f(x) for x in xs]
-    p = Plots.plot(xs, fs, legend=false, color=:red, linewidth=2.5, fontfamily="Computer Modern")
+    z = [1 for x in xs]
+
+    p = Plots.plot(xs, z, fs, legend=false, color=:red, linewidth=1.0, fontfamily="Computer Modern", camera=(70, 50))
 
     lp = Model(opt)
     set_optimizer_attribute(lp, "CPXPARAM_ScreenOutput", 0)
@@ -153,9 +156,9 @@ function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Noth
         else
             line_xs, line_ys = get_lp_cut(m, c, x_min, x_max, y_min, y_max)
         end
-
+        line_zs = [1 for i in line_xs]
         if !isempty(line_xs)
-            Plots.plot!(line_xs, line_ys, color=:green, fontfamily="Computer Modern")
+            Plots.plot!(line_xs, line_zs, line_ys, color=:blue, linealpha=0.4, fontfamily="Computer Modern")
         end
 
         set_objective_sense(lp, MOI.MIN_SENSE)
@@ -169,37 +172,52 @@ function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Noth
         else
             line_xs, line_ys = get_lp_cut(m, c, x_min, x_max, y_min, y_max)
         end
-        Plots.plot!(line_xs, line_ys, color=:blue, fontfamily="Computer Modern")
+        line_zs = [1 for i in line_xs]
+        Plots.plot!(line_xs, line_zs, line_ys, color=:blue, linealpha=0.4, fontfamily="Computer Modern")
     end
 
+    for z_d in 0:0.005:1.0
+        Plots.plot!(xs * z_d, z * z_d, fs * z_d, color=:orange, linealpha=0.4, linewidth=0.5, legend=false)
+    end
     Plots.savefig(p, out_file)
     @info "finished plotting lp"
 end
 
-function generate_plots()
-    # f, bp = x->x^3, collect(-1.0:0.25:1.0)
-    # f, bp = sin, collect(-(2*π):π/8:(2*π))
-    # f, bp = cos, collect(-(2*π):π/8:(2*π))
-    # f, bp = log, collect(1.0:1.0:5.0)
-    # f, bp = exp, collect(0.0:0.5:2.0)
-    # f, bp = cot, collect(π/16:π/32:(π-π/16))
-
-    @info "plotting sin(x)"
-    f, bp = sin, collect(0:π:(2 * π))
-    f, bp = sin, collect(0:π / 2:(2 * π))
-    f, bp = sin, collect(0:π / 4:(2 * π))
-    # plot_mip(f, bp, out_file="plots/sin-mip.pdf")
-    plot_lp(f, bp, out_file="plots/sin-lp.pdf")
-    @info "plotting x ⋅ abs(x)"
-    f, bp = x -> x * abs(x), collect(-1.0:1.0:1.0)
-    f, bp = x -> x * abs(x), collect(-1.0:0.5:1.0)
-    f, bp = x -> x * abs(x), collect(-1.0:0.25:1.0)
-    # plot_mip(f, bp, out_file="plots/xabsx-mip.pdf", f_dash=x -> 2 * abs(x))
-    plot_lp(f, bp, out_file="plots/xabsx-lp.pdf", f_dash=x -> 2 * abs(x))
+function generate_envelopes()
     @info "plotting x^4 - x^3"
     f, bp = x -> x^4 - x^3, collect(-0.5:0.5:1.0)
-    f, bp = x -> x^4 - x^3, collect(-0.5:0.25:1.0)
-    f, bp = x -> x^4 - x^3, collect(-0.5:0.125:1.0)
-    # plot_mip(f, bp, out_file="plots/poly-mip.pdf")
+    # f, bp = x -> x^4 - x^3, collect(-0.5:0.25:1.0)
     plot_lp(f, bp, out_file="plots/poly-lp.pdf")
 end
+
+function generate_function()
+    @info "plotting x^4 - x^3"
+    f, bp = x -> x^4 - x^3, [-0.5, 1.0]
+    plot_function(f, bp)
+end 
+
+function plot_function(f::Function, base_partition::Vector{<:Real}; out_file="plots/fcn.pdf")
+    lp_data, fn_data = PR.construct_lp_relaxation(f, base_partition)
+    lb, ub = PR.get_variable_bounds(lp_data)
+
+    x_min, x_max = lb[lp_data.x_index], ub[lp_data.x_index]
+    @info "x bounds: $x_min, $x_max"
+
+    y_min, y_max = lb[lp_data.y_index], ub[lp_data.y_index]
+    @info "y bounds: $y_min, $y_max"
+
+    xs = collect(x_min:0.01:x_max)
+    fs = [f(x) for x in xs]
+    z = [1 for x in xs]
+
+    for z_d in 0:0.005:1.0
+        Plots.plot!(xs * z_d, z * z_d, fs * z_d, color=:orange, linealpha=0.6, linewidth=0.5, legend=false)
+    end
+    p = Plots.plot!(xs, z, fs, legend=false, color=:red, linewidth=1.0, fontfamily="Computer Modern", camera=(70, 50))
+    Plots.scatter!([0], [0], [0])
+
+    Plots.yticks!([1, 0])
+    Plots.ylabel!(latexstring("\$z \\in \\{0, 1\\}\$"))
+    Plots.savefig(p, out_file)
+    @info "finished plotting function"
+end 
