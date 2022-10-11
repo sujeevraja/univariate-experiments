@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-#=
+#= 
 export JULIA_DEBUG=UnivariateExperiments
 exec julia --project="." --color=yes --startup-file=no -e \
-    'include(popfirst!(ARGS))' "${BASH_SOURCE[0]}" "$@"
-=#
+    'include(popfirst!(ARGS))' "${BASH_SOURCE[0]}" "$@" =#
 
 using JuMP
 using CPLEX
-using PolyhedralRelaxations
 using Printf
 using Plots
 using SparseArrays

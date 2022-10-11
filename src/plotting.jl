@@ -11,7 +11,11 @@ opt = CPLEX.Optimizer
 # An alternative is `Plots.plotly()`, which uses Python's plotly library as the backend.
 Plots.gr()
 
-function plot_mip(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Function,Nothing}=nothing, out_file="plots/mip.pdf")
+function plot_mip(
+    f::Function,
+    base_partition::Vector{<:Real};
+    f_dash::Union{Function,Nothing}=nothing,
+    out_file="plots/mip.pdf")
     if isa(f_dash, Nothing)
         milp_data, function_data = PR.construct_milp_relaxation(f, base_partition)
     else 
@@ -57,7 +61,7 @@ function plot_mip(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Fun
         @assert termination_status(milp) == MOI.OPTIMAL
         yval = value.(x[milp_data.y_index])
         obj = objective_value(milp)
-        @assert isapprox(yval, obj, atol = 1e-5) "obj $obj and y $yval different in max problem"
+        @assert isapprox(yval, obj, atol=1e-5) "obj $obj and y $yval different in max problem"
         push!(max_ys, yval)
 
         set_objective_sense(milp, MOI.MIN_SENSE)
@@ -65,12 +69,12 @@ function plot_mip(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Fun
         @assert termination_status(milp) == MOI.OPTIMAL
         yval = value.(x[milp_data.y_index])
         obj = objective_value(milp)
-        @assert isapprox(yval, obj, atol = 1e-5) "obj $obj and y $yval different in min problem"
+        @assert isapprox(yval, obj, atol=1e-5) "obj $obj and y $yval different in min problem"
         push!(min_ys, yval)
     end
 
     fs = [f(x) for x in xs]
-    p = Plots.plot(xs, hcat(max_ys,fs,min_ys), legend=false)
+    p = Plots.plot(xs, hcat(max_ys, fs, min_ys), legend=false)
     Plots.savefig(p, out_file)
     @info "finished plotting mip"
 end
@@ -88,9 +92,9 @@ function get_lp_cut(m::Float64, c::Float64, x_min::Float64, x_max::Float64, y_mi
             x = (y_min - c) / m
         end
         push!(xs, x)
-        push!(ys, (m*x)+c)
+        push!(ys, (m * x) + c)
     end
-    return Pair(xs,ys)
+    return Pair(xs, ys)
 end
 
 function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Nothing,Function}=nothing, out_file="plots/lp.pdf")
@@ -109,7 +113,7 @@ function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Noth
 
     xs = collect(x_min:0.01:x_max)
     fs = [f(x) for x in xs]
-    p = Plots.plot(xs,fs,legend=false,color=:orange)
+    p = Plots.plot(xs, fs, legend=false, color=:orange)
 
     lp = Model(opt)
     set_optimizer_attribute(lp, "CPXPARAM_ScreenOutput", 0)
@@ -123,12 +127,12 @@ function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Noth
         set_name(y[k], PR.get_variable_names(lp_data)[k])
     end
 
-    res = π/100
+    res = π / 100
     for α ∈ collect(0:res:π)
         xvar = y[lp_data.x_index]
         yvar = y[lp_data.y_index]
 
-        if (isapprox(α, π/2, atol=1e-5) || isapprox(α, -π/2, atol=1e-5))
+        if (isapprox(α, π / 2, atol=1e-5) || isapprox(α, -π / 2, atol=1e-5))
             continue
         end
 
@@ -150,7 +154,7 @@ function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Noth
         # elseif (isapprox(α, π/2, atol=1e-5) || isapprox(α, -π/2, atol=1e-5))
         #     line_xs, line_ys = [c, c], [y_min, y_max]
         else
-            line_xs, line_ys = get_lp_cut(m,c,x_min,x_max,y_min,y_max)
+            line_xs, line_ys = get_lp_cut(m, c, x_min, x_max, y_min, y_max)
         end
 
         if !isempty(line_xs)
@@ -166,7 +170,7 @@ function plot_lp(f::Function, base_partition::Vector{<:Real}; f_dash::Union{Noth
         # elseif (isapprox(α, π/2, atol=1e-5) || isapprox(α, -π/2, atol=1e-5))
         #     line_xs, line_ys = [c, c], [y_min, y_max]
         else
-            line_xs,line_ys = get_lp_cut(m,c,x_min,x_max,y_min,y_max)
+            line_xs, line_ys = get_lp_cut(m, c, x_min, x_max, y_min, y_max)
         end
         Plots.plot!(line_xs, line_ys, color=:green)
     end
@@ -183,13 +187,13 @@ function generate_plots()
     # f, bp = exp, collect(0.0:0.5:2.0)
     # f, bp = cot, collect(π/16:π/32:(π-π/16))
     @info "plotting sin(x)"
-    f, bp = sin, collect(0:π/8:(2*π))
+    f, bp = sin, collect(0:π / 8:(2 * π))
     plot_mip(f, bp, out_file="plots/sin-mip.pdf")
     plot_lp(f, bp, out_file="plots/sin-lp.pdf")
     @info "plotting x ⋅ abs(x)"
     f, bp = x -> x * abs(x), collect(-1.0:0.25:1.0)
-    plot_mip(f, bp, out_file="plots/xabsx-mip.pdf", f_dash=x->2*abs(x))
-    plot_lp(f, bp, out_file="plots/xabsx-lp.pdf", f_dash=x->2*abs(x))
+    plot_mip(f, bp, out_file="plots/xabsx-mip.pdf", f_dash=x -> 2 * abs(x))
+    plot_lp(f, bp, out_file="plots/xabsx-lp.pdf", f_dash=x -> 2 * abs(x))
     @info "plotting x^4 - x^3"
     f, bp = x -> x^4 - x^3, collect(-0.5:0.1:1.0)
     plot_mip(f, bp, out_file="plots/poly-mip.pdf")
